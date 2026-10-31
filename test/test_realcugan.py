@@ -61,6 +61,7 @@ def main():
 
     clip = core.std.BlankClip(width=96, height=64, format=vs.RGBS, length=2, color=[0.2, 0.5, 0.8])
     expect_error(lambda: core.rcnv.RealCUGAN(clip.resize.Point(format=vs.RGB24)), "integer input rejected", "32 bits float")
+    expect_error(lambda: core.rcnv.RealCUGAN(clip.resize.Point(format=vs.YUV444PS, matrix_s="709")), "float YUV input rejected", "float RGB")
     expect_error(lambda: core.rcnv.RealCUGAN(clip, scale=5), "scale 5 rejected", "2 - 4 scale")
     expect_error(lambda: core.rcnv.RealCUGAN(clip, model=3), "model 3 rejected", "0 - 2")
     expect_error(lambda: core.rcnv.RealCUGAN(clip, model=0, scale=3), "models-nose with scale 3 rejected", "models-nose")
