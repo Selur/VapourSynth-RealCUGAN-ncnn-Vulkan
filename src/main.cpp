@@ -12,6 +12,16 @@
 #include "VapourSynth4.h"
 #include "VSHelper4.h"
 
+#ifdef _WIN32
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <windows.h>
+#endif
+
 class Semaphore
 {
 private:
@@ -449,6 +459,16 @@ static void VS_CC filterCreate(const VSMap* in, VSMap* out, void* userData, VSCo
 VS_EXTERNAL_API(void) VapourSynthPluginInit2(VSPlugin* plugin, const VSPLUGINAPI* vspapi)
 {
     vspapi->configPlugin("com.vapoursynth.realcugannv", "rcnv", "RealCUGAN ncnn Vulkan plugin", VS_MAKE_VERSION(1, 1), VAPOURSYNTH_API_VERSION, 0, plugin);
+
+#ifdef _WIN32
+    // ncnn's OpenMP worker threads outlive the plugin; unloading vcomp140 together with it crashes them
+    HMODULE openmpRuntime;
+#ifdef _DEBUG
+    GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_PIN, L"vcomp140d.dll", &openmpRuntime);
+#else
+    GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_PIN, L"vcomp140.dll", &openmpRuntime);
+#endif
+#endif
 
     vspapi->registerFunction("RealCUGAN",
                              "clip:vnode;"
