@@ -85,6 +85,13 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/vapoursynth)
 add_library(realcugannv MODULE src/main.cpp src/realcugan.cpp)
 target_link_libraries(realcugannv ncnn)
 add_dependencies(realcugannv generate-spirv)
+# Export only the plugin entry point; the bundled ncnn and glslang symbols must not clash with other plugins in the same process.
+if(APPLE)
+    target_link_options(realcugannv PRIVATE "LINKER:-exported_symbol,_VapourSynthPluginInit2")
+elseif(UNIX)
+    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/exports.map "{ global: VapourSynthPluginInit2; local: *; };\n")
+    target_link_options(realcugannv PRIVATE "LINKER:--version-script=${CMAKE_CURRENT_BINARY_DIR}/exports.map")
+endif()
 if(APPLE)
     # VapourSynth only autoloads *.dylib on macOS.
     set_target_properties(realcugannv PROPERTIES SUFFIX ".dylib")
